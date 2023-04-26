@@ -28,10 +28,14 @@ const MessageSender = () => {
 
   const resetHandler = (event) => {
     event.preventDefault();
-    console.log("reset");
-    localStorage.setItem("googleSheetsCsvUrl", "");
-    localStorage.setItem("token", "");
-    localStorage.setItem("device", "");
+    setGoogleSheetsCsvUrl("");
+    setToken("");
+    setDevice("");
+    setMsg("");
+    setErr("");
+    localStorage.removeItem("googleSheetsCsvUrl");
+    localStorage.removeItem("token");
+    localStorage.removeItem("device");
   };
 
   const handleSubmit = async (event) => {
