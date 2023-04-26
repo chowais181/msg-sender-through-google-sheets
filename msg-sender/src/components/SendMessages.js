@@ -61,6 +61,7 @@ const MessageSender = () => {
         if (number && number.length >= 8 && message) {
           sendMessage(number, message);
         }
+
         return 1;
       });
     } catch (err) {
@@ -131,7 +132,7 @@ const MessageSender = () => {
           </div>
         </div>
       </form>
-      <h4>{msg}</h4>
+      <h4>{err ? "" : msg}</h4>
       <h4>{err === "" ? "" : err}</h4>
     </div>
   );
