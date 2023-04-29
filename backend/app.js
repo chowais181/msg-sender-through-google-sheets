@@ -18,23 +18,21 @@ app.use(cookieParser());
 //only looks at requests where the Content-Type header matches the type option.
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(cors());
-
 app.use(express.static("public"));
 // .....Routes imports
-
 const msg = require("./routes/sendMsgRoute");
+
+
 
 app.use("/api/v1", msg);
 
-// if (process.env.NODE_ENV === "production") {
-app.use("/", express.static("../client/build"));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "../client/build/index.html"));
-});
-//   }
+if (process.env.NODE_ENV === "production") {
+  app.use("/", express.static("../msg-sender/build"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../msg-sender/build/index.html"));
+  });
+}
 
 // ..error middleware we handle the error through it so over server would not stop
 const errormiddleware = require("./middleware/error");
