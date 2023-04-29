@@ -6,10 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "client-install": "npm install --prefix client",
-    "start": "node backend/server.js",
+    "start": "node server.js",
     "client": "npm start --prefix client",
-    "server": "nodemon backend/server.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "nodemon backend/server.js"
   },
   "keywords": [],
   "author": "",

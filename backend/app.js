@@ -23,9 +23,11 @@ app.use(express.static("public"));
 // .....Routes imports
 const msg = require("./routes/sendMsgRoute");
 
-
-
 app.use("/api/v1", msg);
+
+app.get("/", (req, res) => {
+  res.send("<h1>working fine</h1>");
+});
 
 if (process.env.NODE_ENV === "production") {
   app.use("/", express.static("../msg-sender/build"));
