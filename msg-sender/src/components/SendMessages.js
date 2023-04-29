@@ -3,6 +3,8 @@ import axios from "axios";
 // import Papa from "papaparse";
 import "./MessageSender.css";
 const MessageSender = () => {
+  const apiUrl = process.env.REACT_APP_BASE_URL;
+
   const [googleSheetsCsvUrl, setGoogleSheetsCsvUrl] = useState(
     localStorage.getItem("googleSheetsCsvUrl") || ""
   );
@@ -50,7 +52,7 @@ const MessageSender = () => {
           },
         };
         const { data } = await axios.post(
-          "/api/v1/send-msg",
+          apiUrl + "api/v1/send-msg",
           { googleSheetsCsvUrl, token, deviceId },
           config
         );
