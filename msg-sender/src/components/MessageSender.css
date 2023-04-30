@@ -44,3 +44,18 @@ button:disabled {
 .reset-btn {
   margin-left: 10px;
 }
+
+/* For screens smaller than 600px (mobile devices) */
+@media only screen and (max-width: 600px) {
+  form {
+    width: 90%;
+  }
+
+  input {
+    width: 300px;
+  }
+
+  button {
+    width: 100%;
+  }
+}
