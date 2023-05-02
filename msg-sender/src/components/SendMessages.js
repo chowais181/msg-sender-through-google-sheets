@@ -4,7 +4,7 @@ import axios from "axios";
 import "./MessageSender.css";
 const MessageSender = () => {
   // const apiUrl = process.env.REACT_APP_BASE_URL;
-  const apiUrl = "http://localhost:5000/";
+  const apiUrl = "http://localhost:4000/";
 
   const [googleSheetsCsvUrl, setGoogleSheetsCsvUrl] = useState(
     localStorage.getItem("googleSheetsCsvUrl") || ""
@@ -37,7 +37,39 @@ const MessageSender = () => {
     localStorage.setItem("device", "");
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmitAll = async (event) => {
+    event.preventDefault();
+    setMsg("Please wait messages are sending ....");
+    setErr("");
+    setRes("");
+    if (token === "" || deviceId === "" || googleSheetsCsvUrl === "") {
+      setMsg("Please fill all the input fields");
+    } else {
+      try {
+        // configure header's Content-Type as JSON
+        const config = {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+        const { data } = await axios.post(
+          apiUrl + "api/v1/send-msg-all",
+          { googleSheetsCsvUrl, token, deviceId },
+          config
+        );
+        setRes(data?.messages);
+        setMsg("");
+      } catch (err) {
+        console.log(err);
+        setErr(err?.response?.data?.message);
+        setMsg("");
+        setRes("");
+        console.error(err?.message);
+      }
+    }
+  };
+
+  const handleSubmitNew = async (event) => {
     event.preventDefault();
     setMsg("Please wait messages are sending ....");
     setErr("");
@@ -72,7 +104,7 @@ const MessageSender = () => {
   return (
     <div>
       <br />
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitAll}>
         <label htmlFor="googleSheetsCsvUrl">Google Sheets CSV URL</label>
         <input
           id="googleSheetsCsvUrl"
@@ -98,17 +130,22 @@ const MessageSender = () => {
         />
         <div className="btns">
           <div className="msg-btn">
-            <button type="submit">Send Messages</button>
+            <button type="submit">Send Msg to All Numbers</button>
           </div>
+          <br />
+          <div className="msg-btn-new">
+            <button onClick={handleSubmitNew}>Send Msg to New Numbers</button>
+          </div>
+          <br />
           <div className="reset-btn">
             <button onClick={resetHandler}>Reset</button>
           </div>
         </div>
       </form>
       <h4>{err ? "" : msg}</h4>
-      <h5>
+      <h4>
         {res.length > 0 && res?.map((msg) => <p key={msg}>{`\n${msg}`}</p>)}
-      </h5>
+      </h4>
       <h4>{err === "" ? "" : err}</h4>
     </div>
   );

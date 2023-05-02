@@ -1,15 +1,19 @@
 const axios = require("axios");
-const fs = require("fs");
 const { parse } = require("csv-parse/sync");
+const fs = require("fs");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 let tokenId = "";
 let device = "";
-let googleSheetsCsvUrl = "";
 const url = "https://api.wali.chat/v1/messages";
 
-const sendMessages = catchAsyncErrors(async (req, res) => {
+const sendMessagesAll = catchAsyncErrors(async (req, res) => {
   try {
+    fs.writeFile(__dirname + "/phoneNumbers.txt", "", function (err) {
+      if (err) throw err;
+      console.log("File is now empty.");
+    });
+
     const { googleSheetsCsvUrl, deviceId, token } = req.body;
     device = deviceId;
     tokenId = token;
@@ -17,13 +21,11 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
     console.log("=> Downloading Google Sheets CSV file...");
     messages.push("Downloading Google Sheets CSV file...");
     const { data } = await axios.get(googleSheetsCsvUrl);
-
     if (!data?.length) {
       res.status(200).json({ messages });
       messages.push("Downloading Google Sheets CSV file...");
     }
     const records = parse(data, { columns: false, skip_empty_lines: true });
-    const newPhoneNumbers = [];
     // Check each phone number against existing phone numbers in file
     const fileData = fs.readFileSync(__dirname + "/phoneNumbers.txt", "utf-8");
     const existingPhoneNumbers = fileData.split("\n");
@@ -35,25 +37,17 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
         continue;
       }
       const number = normalizePhone(phone);
-      if (
-        number &&
-        number.length >= 8 &&
-        message &&
-        !existingPhoneNumbers.includes(number)
-      ) {
-        newPhoneNumbers.push(number);
-        // Add new phone number to file
-        fs.appendFileSync(__dirname + "/phoneNumbers.txt", `${number}\n`);
-      }
-
-      // Send message to new phone numbers only
-      if (newPhoneNumbers.includes(number)) {
-        console.log("Send message to new phone numbers only");
+      if (number && number.length >= 8 && message) {
         const body = {
           phone,
           message: message.trim(),
           device,
         };
+        if (!existingPhoneNumbers.includes(number)) {
+          // Add new phone number to file
+          fs.appendFileSync(__dirname + "/phoneNumbers.txt", `${number}\n`);
+        }
+
         try {
           const headers = {
             "Content-Type": "application/json",
@@ -89,10 +83,6 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
       }
     }
 
-    if (!newPhoneNumbers.length) {
-      messages.push("No changes in file");
-    }
-
     res.status(200).json({ messages });
   } catch (err) {
     console.error("Error:", err);
@@ -104,4 +94,4 @@ const normalizePhone = (phone) => {
   return `+${phone.replace(/\D/g, "")}`;
 };
 
-module.exports = { sendMessages };
+module.exports = { sendMessagesAll };

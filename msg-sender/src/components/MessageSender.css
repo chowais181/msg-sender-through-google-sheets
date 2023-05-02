@@ -37,8 +37,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.btns {
-  display: flex;
+.msg-btn-new {
+  margin-left: 10px;
 }
 
 .reset-btn {
@@ -53,6 +53,21 @@ button:disabled {
 
   input {
     width: 300px;
+  }
+
+  button {
+    width: 100%;
+  }
+}
+
+/* For screens smaller than 600px (mobile devices) */
+@media only screen and (max-width: 350px) {
+  form {
+    width: 90%;
+  }
+
+  input {
+    width: 250px;
   }
 
   button {
