@@ -1,12 +1,13 @@
 const axios = require("axios");
 const fs = require("fs");
+const path = require("path");
 const { parse } = require("csv-parse/sync");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 let tokenId = "";
 let device = "";
-let googleSheetsCsvUrl = "";
 const url = "https://api.wali.chat/v1/messages";
+const filePath = path.join(__dirname, "phoneNumbers.txt");
 
 const sendMessages = catchAsyncErrors(async (req, res) => {
   try {
@@ -25,7 +26,7 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
     const records = parse(data, { columns: false, skip_empty_lines: true });
     const newPhoneNumbers = [];
     // Check each phone number against existing phone numbers in file
-    const fileData = fs.readFileSync(__dirname + "/phoneNumbers.txt", "utf-8");
+    const fileData = fs.readFileSync(filePath, "utf-8");
     const existingPhoneNumbers = fileData.split("\n");
 
     console.log("=> Processing messages...");
@@ -43,7 +44,7 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
       ) {
         newPhoneNumbers.push(number);
         // Add new phone number to file
-        fs.appendFileSync(__dirname + "/phoneNumbers.txt", `${number}\n`);
+        fs.appendFileSync(filePath, `${number}\n`);
       }
 
       // Send message to new phone numbers only

@@ -1,15 +1,18 @@
 const axios = require("axios");
 const { parse } = require("csv-parse/sync");
 const fs = require("fs");
+const path = require("path");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 let tokenId = "";
 let device = "";
 const url = "https://api.wali.chat/v1/messages";
 
+const filePath = path.join(__dirname, "phoneNumbers.txt");
+
 const sendMessagesAll = catchAsyncErrors(async (req, res) => {
   try {
-    fs.writeFile(__dirname + "/phoneNumbers.txt", "", function (err) {
+    fs.writeFile(filePath, "", function (err) {
       if (err) throw err;
       console.log("File is now empty.");
     });
@@ -27,7 +30,7 @@ const sendMessagesAll = catchAsyncErrors(async (req, res) => {
     }
     const records = parse(data, { columns: false, skip_empty_lines: true });
     // Check each phone number against existing phone numbers in file
-    const fileData = fs.readFileSync(__dirname + "/phoneNumbers.txt", "utf-8");
+    const fileData = fs.readFileSync(filePath, "utf-8");
     const existingPhoneNumbers = fileData.split("\n");
 
     console.log("=> Processing messages...");
@@ -45,7 +48,7 @@ const sendMessagesAll = catchAsyncErrors(async (req, res) => {
         };
         if (!existingPhoneNumbers.includes(number)) {
           // Add new phone number to file
-          fs.appendFileSync(__dirname + "/phoneNumbers.txt", `${number}\n`);
+          fs.appendFileSync(filePath, `${number}\n`);
         }
 
         try {
