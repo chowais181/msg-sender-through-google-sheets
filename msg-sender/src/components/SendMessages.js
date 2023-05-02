@@ -3,7 +3,8 @@ import axios from "axios";
 // import Papa from "papaparse";
 import "./MessageSender.css";
 const MessageSender = () => {
-  const apiUrl = process.env.REACT_APP_BASE_URL;
+  // const apiUrl = process.env.REACT_APP_BASE_URL;
+  const apiUrl = "http://localhost:5000/";
 
   const [googleSheetsCsvUrl, setGoogleSheetsCsvUrl] = useState(
     localStorage.getItem("googleSheetsCsvUrl") || ""
