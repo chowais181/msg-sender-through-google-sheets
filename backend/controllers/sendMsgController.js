@@ -1,13 +1,11 @@
 const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const numbersModel = require("../models/numbersModel");
 const { parse } = require("csv-parse/sync");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 let tokenId = "";
 let device = "";
 const url = "https://api.wali.chat/v1/messages";
-const filePath = path.join(__dirname, "phoneNumbers.txt");
 
 const sendMessages = catchAsyncErrors(async (req, res) => {
   try {
@@ -25,9 +23,6 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
     }
     const records = parse(data, { columns: false, skip_empty_lines: true });
     const newPhoneNumbers = [];
-    // Check each phone number against existing phone numbers in file
-    const fileData = fs.readFileSync(filePath, "utf-8");
-    const existingPhoneNumbers = fileData.split("\n");
 
     console.log("=> Processing messages...");
     messages.push("Processing messages...");
@@ -35,18 +30,18 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
       if (!phone || !message) {
         continue;
       }
-      const number = normalizePhone(phone);
-      if (
-        number &&
-        number.length >= 8 &&
-        message &&
-        !existingPhoneNumbers.includes(number)
-      ) {
-        newPhoneNumbers.push(number);
-        // Add new phone number to file
-        fs.appendFileSync(filePath, `${number}\n`);
-      }
+      const number = await normalizePhone(phone);
+      // Check if the phone number already exists in the database
+      const existingPhoneNumber = await numbersModel.findOne({
+        phoneNumber: number,
+      });
 
+      if (number && number.length >= 8 && message && !existingPhoneNumber) {
+        newPhoneNumbers.push(number);
+        // Add new phone number to db
+        await numbersModel.create({ phoneNumber: number });
+      }
+      console.log(newPhoneNumbers);
       // Send message to new phone numbers only
       if (newPhoneNumbers.includes(number)) {
         console.log("Send message to new phone numbers only");
@@ -101,8 +96,8 @@ const sendMessages = catchAsyncErrors(async (req, res) => {
   }
 });
 
-const normalizePhone = (phone) => {
-  return `+${phone.replace(/\D/g, "")}`;
+const normalizePhone = async (phone) => {
+  return Promise.resolve(`+${phone.replace(/\D/g, "")}`);
 };
 
 module.exports = { sendMessages };

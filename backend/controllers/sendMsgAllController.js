@@ -1,22 +1,24 @@
 const axios = require("axios");
 const { parse } = require("csv-parse/sync");
-const fs = require("fs");
-const path = require("path");
+const numbersModel = require("../models/numbersModel");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 
 let tokenId = "";
 let device = "";
 const url = "https://api.wali.chat/v1/messages";
 
-const filePath = path.join(__dirname, "phoneNumbers.txt");
-
 const sendMessagesAll = catchAsyncErrors(async (req, res) => {
-  try {
-    fs.writeFile(filePath, "", function (err) {
-      if (err) throw err;
-      console.log("File is now empty.");
+  // empty the collection
+  numbersModel
+    .deleteMany({})
+    .then(() => {
+      console.log("Collection emptied successfully");
+    })
+    .catch((err) => {
+      console.error("Error emptying collection:", err);
     });
 
+  try {
     const { googleSheetsCsvUrl, deviceId, token } = req.body;
     device = deviceId;
     tokenId = token;
@@ -29,9 +31,6 @@ const sendMessagesAll = catchAsyncErrors(async (req, res) => {
       messages.push("Downloading Google Sheets CSV file...");
     }
     const records = parse(data, { columns: false, skip_empty_lines: true });
-    // Check each phone number against existing phone numbers in file
-    const fileData = fs.readFileSync(filePath, "utf-8");
-    const existingPhoneNumbers = fileData.split("\n");
 
     console.log("=> Processing messages...");
     messages.push("Processing messages...");
@@ -46,10 +45,8 @@ const sendMessagesAll = catchAsyncErrors(async (req, res) => {
           message: message.trim(),
           device,
         };
-        if (!existingPhoneNumbers.includes(number)) {
-          // Add new phone number to file
-          fs.appendFileSync(filePath, `${number}\n`);
-        }
+
+        await numbersModel.create({ phoneNumber: number });
 
         try {
           const headers = {

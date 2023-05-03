@@ -1,4 +1,5 @@
 const app = require("./app");
+const databaseConnection = require("./db");
 //...Handling Uncaught Exception e.g(console.log(youtube)) it gives us undefined behaviour and uncaughtException
 process.on("uncaughtException", (err) => {
   console.log(`Error: ${err.message}`);
@@ -8,6 +9,9 @@ process.on("uncaughtException", (err) => {
 
 // loads environment variables from a .env file into process.env
 require("dotenv").config();
+
+//connect to database
+databaseConnection();
 
 //connection to serve
 const port = process.env.PORT || 5000;
